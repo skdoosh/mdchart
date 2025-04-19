@@ -1,0 +1,117 @@
+Metadata-Version: 2.4
+Name: mdchart
+Version: 0.1.0
+Summary: A command-line tool to generate charts from markdown files
+Home-page: https://github.com/yourusername/mdchart
+Author: Your Name
+Author-email: Your Name <your.email@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/yourusername/mdchart
+Keywords: markdown,chart,visualization,cli
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: C
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Topic :: Text Processing :: Markup :: Markdown
+Classifier: Topic :: Multimedia :: Graphics :: Presentation
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: matplotlib>=3.0.0
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
+# mdchart
+
+A command-line tool to generate charts from markdown files. Convert chart specifications in markdown to beautiful PNG charts.
+
+## Installation
+
+### From Source
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/mdchart.git
+cd mdchart
+
+# Install Python dependencies
+make python-deps
+
+# Build and install the C executable
+make
+./build.py  # This will install the binary to /usr/local/bin or ~/.local/bin
+
+# Install the Python package
+pip install .
+```
+
+### Dependencies
+- C compiler (gcc)
+- flex
+- bison
+- Python 3.x
+- matplotlib
+
+## Usage
+
+### Basic Usage
+```bash
+# Process a markdown file
+mdchart input.md
+
+# Process and save to a specific output file
+mdchart -o output.md input.md
+
+# Read from stdin
+cat input.md | mdchart
+
+# Show help
+mdchart --help
+```
+
+### Chart Syntax
+In your markdown files, create charts using the following syntax:
+
+```markdown
+```chart
+type = bar;
+x = label;
+y = value;
+data = [A:10, B:20, C:15];
+```
+```
+
+### Supported Chart Types
+- `bar`: Bar charts
+- `line`: Line charts with markers
+
+## Examples
+
+Input markdown:
+```markdown
+# Sales Report
+
+```chart
+type = bar;
+x = month;
+y = sales;
+data = [Jan:100, Feb:120, Mar:90];
+```
+```
+
+This will generate a bar chart and replace the chart block with a markdown image link.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+[MIT License](LICENSE) 
