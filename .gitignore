@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+
+# Build artifacts
+build/
+dist/
+*.so
+
+# Generated charts
+chart_*.png
+
+# IDE
+.DS_Store
+.vscode/
+.idea/

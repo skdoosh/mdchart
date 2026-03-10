@@ -1,51 +1,56 @@
-# Compiler and tools
-CC     = gcc
-LEX    = flex
-YACC   = bison
-PYTHON = python3
+PYTHON ?= python3
+PIP ?= $(PYTHON) -m pip
 
-# Source files
-SRC    = main.c ast.c
-LEXER  = mdchart.l
-PARSER = mdchart.y
+SRC_C_DIR := src/c
+BUILD_DIR := build
+TARGET := $(BUILD_DIR)/md2chart
 
-# Generated files
-LEX_C  = lex.yy.c
-YACC_C = mdchart.tab.c
-YACC_H = mdchart.tab.h
+LEXER := $(SRC_C_DIR)/mdchart.l
+PARSER := $(SRC_C_DIR)/mdchart.y
+LEX_C := $(BUILD_DIR)/lex.yy.c
+YACC_C := $(BUILD_DIR)/mdchart.tab.c
+YACC_H := $(BUILD_DIR)/mdchart.tab.h
+C_SRC := $(SRC_C_DIR)/main.c $(SRC_C_DIR)/ast.c
 
-# Final executable
-TARGET = md2chart
+.DEFAULT_GOAL := help
 
-# Python dependencies
-PYTHON_DEPS = matplotlib
+help:
+	@echo "Targets:"
+	@echo "  install        Install package and dev deps"
+	@echo "  test           Run pytest suite"
+	@echo "  api            Run FastAPI dev server"
+	@echo "  legacy-build   Build legacy C/Flex/Bison binary"
+	@echo "  legacy-run     Run legacy binary using examples/example.md"
+	@echo "  clean          Remove generated artifacts"
 
-# Default build
-all: $(TARGET)
+install:
+	$(PIP) install -e '.[dev]'
 
-$(TARGET): $(SRC) $(YACC_C) $(LEX_C)
-	$(CC) -o $(TARGET) $(SRC) $(YACC_C) $(LEX_C) -lfl
+test:
+	$(PYTHON) -m pytest
 
-$(YACC_C) $(YACC_H): $(PARSER)
-	$(YACC) -d $(PARSER)
+api:
+	uvicorn apps.api.main:app --reload
 
-$(LEX_C): $(LEXER)
-	$(LEX) $(LEXER)
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
-# Install Python dependencies
-python-deps:
-	$(PYTHON) -m pip install $(PYTHON_DEPS)
+$(YACC_C) $(YACC_H): $(PARSER) | $(BUILD_DIR)
+	bison -d -o $(YACC_C) $(PARSER)
 
-# Clean up generated files
+$(LEX_C): $(LEXER) $(YACC_H) | $(BUILD_DIR)
+	flex -o $(LEX_C) $(LEXER)
+
+$(TARGET): $(C_SRC) $(YACC_C) $(LEX_C)
+	gcc -I$(SRC_C_DIR) -I$(BUILD_DIR) -o $(TARGET) $(C_SRC) $(YACC_C) $(LEX_C)
+
+legacy-build: $(TARGET)
+
+legacy-run: legacy-build
+	MDCHART_PYTHON=$$(if [ -x .venv/bin/python ]; then echo .venv/bin/python; else echo python3; fi) \
+	./$(TARGET) < examples/example.md > examples/example_output.md
+
 clean:
-	rm -f $(TARGET) $(LEX_C) $(YACC_C) $(YACC_H) *.o chart_*.png
+	rm -rf $(BUILD_DIR) .pytest_cache chart_*.png
 
-# Test run
-run: $(TARGET)
-	./$(TARGET) < example.md > example_output.md
-
-# View result (Linux/macOS only)
-view: run
-	xdg-open example_output.md || open example_output.md
-
-.PHONY: all clean run view python-deps
+.PHONY: help install test api legacy-build legacy-run clean
