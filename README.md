@@ -41,6 +41,11 @@ uvicorn apps.api.main:app --reload
 
 Interactive docs: `http://127.0.0.1:8000/docs`
 
+## Deploy
+
+- Render guide: [docs/deploy-render.md](docs/deploy-render.md)
+- Blog integration guide: [docs/blog-integration.md](docs/blog-integration.md)
+
 ## DSL syntax
 
 ```text

@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import os
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .dsl import SUPPORTED_CHART_TYPES
@@ -67,6 +69,23 @@ app = FastAPI(
     title="mdchart API",
     version="1.0.0",
     description="Render mdchart DSL blocks into matplotlib PNG charts.",
+)
+
+
+def _read_allowed_origins() -> list[str]:
+    # Comma-separated list, e.g. "https://blog.example.com,http://localhost:3000"
+    raw = os.getenv("MDCHART_ALLOWED_ORIGINS", "*")
+    origins = [item.strip() for item in raw.split(",") if item.strip()]
+    return origins or ["*"]
+
+
+_allowed_origins = _read_allowed_origins()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_allowed_origins,
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -140,4 +159,5 @@ def _artifact_response(artifact: ChartArtifact) -> ChartArtifactResponse:
 def run() -> None:
     import uvicorn
 
-    uvicorn.run("mdchart.api:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run("mdchart.api:app", host="0.0.0.0", port=port, reload=False)
